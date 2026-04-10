@@ -1,0 +1,8 @@
+Our project aims to explore the problem of finding the longest possible route between two points in a highway graph, using data provided by the METAL (Map-based Educational Tools for Algorithm Learning) project. Given a start point and an end point, the goal is to determine the longest route connecting them without reusing any road segment. This is an interesting version of the more commonly studied shortest-path problem, and presents a harder algorithmic challenge.
+We plan to begin by more deeply familiarizing ourselves with the METAL dataset and understanding how the graph data is structured. From there, we will investigate what algorithmic approaches are appropriate for this type of problem and implement a solution that works correctly on at least a subset of the available data. Depending on what we learn during development, we may also explore optimizations or approximations if an exact solution proves too costly for larger inputs.
+-- Milestones
+1.  Obtain a better understanding of the METAL data format and successfully load graph data into a workable structure.
+2.  Design and implement an algorithm capable of finding a long or longest route between two given points.
+3.  Test and validate the solution on sample datasets, refining the approach as needed.
+4.  Evaluate performance on larger graphs and explore approximations if necessary.
+Milestones 1 and 2 are the most critical. Successfully parsing the data and producing a correct working solution on small inputs would constitute a successful project. Milestone 4 represents further optimizations that may or may not end up being necessary.
