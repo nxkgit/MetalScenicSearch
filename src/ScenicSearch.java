@@ -86,7 +86,7 @@ public final class ScenicSearch {
         System.out.println("Loaded: " + g.vertexCount() + " vertices, " + g.edgeCount() + " edges");
         System.out.println("Start: [" + start + "] " + g.vertex(start).label());
         System.out.println("End:   [" + end   + "] " + g.vertex(end).label());
-        System.out.println("Searching... (exact backtracking — only feasible on small graphs)");
+        System.out.println("Searching...");
 
         long t0 = System.currentTimeMillis();
         Result result = new ScenicSearch(g).search(start, end);
