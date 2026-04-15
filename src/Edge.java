@@ -1,5 +1,3 @@
-package edu.metalscenic.graph;
-
 import java.util.Arrays;
 
 /**
@@ -20,12 +18,8 @@ public record Edge(int endpointA, int endpointB, String roadLabel, double[] shap
     }
 
     public int otherEndpoint(int v) {
-        if (v == endpointA) {
-            return endpointB;
-        }
-        if (v == endpointB) {
-            return endpointA;
-        }
+        if (v == endpointA) return endpointB;
+        if (v == endpointB) return endpointA;
         throw new IllegalArgumentException("Vertex " + v + " is not an endpoint of this edge");
     }
 }
