@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
@@ -394,12 +395,46 @@ public final class ScenicSearchParallel {
         public boolean isOptimal() { return found() && !approximate; }
     }
 
+    private static void writePthFile(HighwayGraph g, int start, List<Integer> edgeIndices, Path outFile)
+            throws IOException {
+        try (PrintWriter pw = new PrintWriter(outFile.toFile())) {
+            Vertex startV = g.vertex(start);
+            pw.printf(Locale.US, "START %s %.6f %.6f%n", startV.label(), startV.lat(), startV.lon());
+
+            int current = start;
+            for (int ei : edgeIndices) {
+                Edge e = g.edges().get(ei);
+                int next = e.otherEndpoint(current);
+                Vertex nextV = g.vertex(next);
+
+                pw.print(e.roadLabel());
+                pw.print(' ');
+
+                double[] shaping = e.shapingLatLonPairs();
+                if (shaping.length > 0) {
+                    if (current == e.endpointA()) {
+                        for (double value : shaping) {
+                            pw.printf(Locale.US, "%.6f ", value);
+                        }
+                    } else {
+                        for (int i = shaping.length - 2; i >= 0; i -= 2) {
+                            pw.printf(Locale.US, "%.6f %.6f ", shaping[i], shaping[i + 1]);
+                        }
+                    }
+                }
+
+                pw.printf(Locale.US, "%s %.6f %.6f%n", nextV.label(), nextV.lat(), nextV.lon());
+                current = next;
+            }
+        }
+    }
+
     // ── main ──────────────────────────────────────────────────────────────────
 
     public static void main(String[] args) throws IOException {
-        if (args.length < 3) {
+        if (args.length != 3 && args.length != 4) {
             System.err.println(
-                    "Usage: ScenicSearchParallel <file.tmg> <startIndex> <endIndex>");
+                    "Usage: ScenicSearchParallel <file.tmg> <startIndex> <endIndex> [output.pth]");
             System.exit(1);
         }
         HighwayGraph g     = TmgParser.parse(Path.of(args[0]));
@@ -425,6 +460,11 @@ public final class ScenicSearchParallel {
             System.out.printf("Longest path: %.2f km over %d edges (%d ms) [%s]%n",
                     result.distanceKm(), result.edgeIndices().size(), elapsed,
                     result.isOptimal() ? "optimal" : "best found, may not be optimal");
+            if (args.length == 4) {
+                Path out = Path.of(args[3]);
+                writePthFile(g, start, result.edgeIndices(), out);
+                System.out.println("Wrote .pth file: " + out.toAbsolutePath());
+            }
         }
     }
 }
