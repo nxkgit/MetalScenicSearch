@@ -26,46 +26,39 @@ import java.util.concurrent.atomic.*;
  */
 public final class ScenicSearchParallel {
 
-    // ── tuneable constants ────────────────────────────────────────────────────
-
     private static final long TIME_LIMIT_MS = 30_000L;
     private static final long LOG_INTERVAL  = 2_000_000L;
     private static final int  SPLIT_DEPTH   = 2;
-
-    // ── immutable graph data (shared safely across threads) ───────────────────
-
     private final HighwayGraph graph;
     private final double[]     edgeWeightKm;
-
-    /** Incident edge lists pre-sorted heaviest-first per vertex. */
     private final int[][] sortedIncident;
-
-    // ── shared search state ───────────────────────────────────────────────────
-
-    /** Best distance found so far, stored as long bits for AtomicLong. */
     private final AtomicLong sharedBestDist =
             new AtomicLong(Double.doubleToLongBits(-1.0));
-
-    /** Best path — updated under pathLock whenever sharedBestDist improves. */
     private volatile List<Integer> sharedBestPath = List.of();
-    private final    Object        pathLock        = new Object();
-
+    private final Object pathLock = new Object();
     private volatile boolean timeLimitHit = false;
-    private          long    deadline;
+    private long deadline;
 
-    // ── constructor ───────────────────────────────────────────────────────────
-
+    
+    /*
+    This is a constructor for creating a new scenicsearch graph 
+    */
     public ScenicSearchParallel(HighwayGraph graph) {
         this.graph          = graph;
         this.edgeWeightKm   = computeWeights(graph);
         this.sortedIncident = buildSortedIncident(graph, edgeWeightKm);
     }
 
-    // ── weight helpers ────────────────────────────────────────────────────────
+    /*
+    This computes weights of the graph and puts them into an array of doubles which represents the
+    edge weights
 
+    @param HighwayGraph g
+    @output double array w 
+    */
     private static double[] computeWeights(HighwayGraph g) {
         double[] w = new double[g.edgeCount()];
-        for (int i = 0; i < g.edgeCount(); i++) {
+        for (int i = 0; i < w.length(); i++) {
             Edge   e = g.edges().get(i);
             Vertex a = g.vertex(e.endpointA());
             Vertex b = g.vertex(e.endpointB());
@@ -74,6 +67,11 @@ public final class ScenicSearchParallel {
         return w;
     }
 
+    /*
+    calculates distance 
+    @param, double lat1, double long1, double lat2, double long2
+    @output double that represents distance between 2 lat and long points
+    */
     private static double haversineKm(double lat1, double lon1,
                                        double lat2, double lon2) {
         double R    = 6371.0;
@@ -97,8 +95,6 @@ public final class ScenicSearchParallel {
         }
         return sorted;
     }
-
-    // ── public API ────────────────────────────────────────────────────────────
 
     public Result search(int start, int end) {
         int E = graph.edgeCount();
